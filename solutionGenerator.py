@@ -17,7 +17,7 @@ def generate_solution(image_path, option):
             ],
             image=image_file
         )
-
+    type(response.choices[0].message.content)
     return response.choices[0].message.content
 
 # Example usage

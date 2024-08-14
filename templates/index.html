@@ -6,6 +6,15 @@
     <title>Image Upload and Processing</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
+        body {
+            height: 100vh;
+            overflow: hidden; /* Prevent scrolling the entire page */
+        }
+        #response-container {
+            max-height: 200px; /* Limit the height of the response container */
+            overflow-y: auto; /* Allow scrolling within the response container */
+            margin-top: 20px;
+        }
         #preview-container img {
             max-width: 100px;
             max-height: 100px;
@@ -22,26 +31,30 @@
                 <div id="dropzone" class="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center">
                     <p class="mb-4">Drag & drop an image here, paste it, or click to select one</p>
                     <input type="file" id="image" name="image" class="hidden" accept="image/*" required>
-                    <div id="preview-container" class="mt-4"></div>
                 </div>
+                <!-- Preview container placed right below the dropzone -->
+                <div id="preview-container" class="mt-4"></div>
             </div>
             <div class="mb-4">
-                <label class="block mb-2">Choose Option</label>
+                <label class="block mb-2">Does it contain code?</label>
                 <div class="flex space-x-4">
                     <label>
                         <input type="radio" name="option" value="true" class="mr-2" required>
-                        True
+                        Yes
                     </label>
                     <label>
                         <input type="radio" name="option" value="false" class="mr-2" required>
-                        False
+                        No
                     </label>
                 </div>
             </div>
             <button type="submit" class="bg-blue-600 px-4 py-2 rounded hover:bg-blue-500">Submit</button>
         </form>
 
-        <div id="result" class="mt-6 p-4 bg-gray-700 rounded-lg"></div>
+        <!-- Response container to manage large responses -->
+        <div id="response-container" class="bg-gray-700 rounded-lg p-4 mt-6">
+            <div id="result"></div>
+        </div>
     </div>
 
     <script>
@@ -67,6 +80,13 @@
             dropzone.classList.remove('border-green-600');
             imageInput.files = e.dataTransfer.files;
             showImagePreview(e.dataTransfer.files[0]);
+        });
+
+        // Handle file selection from the file input
+        imageInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                showImagePreview(e.target.files[0]);
+            }
         });
 
         document.addEventListener('paste', (e) => {
