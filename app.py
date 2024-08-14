@@ -19,12 +19,14 @@ def index():
         # Get the image file from the request
         image = request.files['image']
         if image:
+            print("image aa gyaa")
             filename = secure_filename(image.filename)
             filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
             image.save(filepath)
 
             # Get the true/false value from the radio button
             option = request.form['option']
+            print("option bhi aa gya")
 
             # Pass the image path and option to the solution generator module
             result = solutionGenerator.generate_solution(filepath, option)
