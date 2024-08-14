@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Image Upload and Processing</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        #preview-container img {
+            max-width: 100px;
+            max-height: 100px;
+            display: block;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-white flex items-center justify-center h-screen">
+    <div class="max-w-md mx-auto">
+        <form id="uploadForm" enctype="multipart/form-data" class="bg-gray-800 p-6 rounded-lg shadow-md">
+            <div class="mb-4">
+                <label for="image" class="block mb-2">Upload Image</label>
+                <div id="dropzone" class="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center">
+                    <p class="mb-4">Drag & drop an image here, paste it, or click to select one</p>
+                    <input type="file" id="image" name="image" class="hidden" accept="image/*" required>
+                    <div id="preview-container" class="mt-4"></div>
+                </div>
+            </div>
+            <div class="mb-4">
+                <label class="block mb-2">Choose Option</label>
+                <div class="flex space-x-4">
+                    <label>
+                        <input type="radio" name="option" value="true" class="mr-2" required>
+                        True
+                    </label>
+                    <label>
+                        <input type="radio" name="option" value="false" class="mr-2" required>
+                        False
+                    </label>
+                </div>
+            </div>
+            <button type="submit" class="bg-blue-600 px-4 py-2 rounded hover:bg-blue-500">Submit</button>
+        </form>
+
+        <div id="result" class="mt-6 p-4 bg-gray-700 rounded-lg"></div>
+    </div>
+
+    <script>
+        const dropzone = document.getElementById('dropzone');
+        const imageInput = document.getElementById('image');
+        const uploadForm = document.getElementById('uploadForm');
+        const resultDiv = document.getElementById('result');
+        const previewContainer = document.getElementById('preview-container');
+
+        dropzone.addEventListener('click', () => imageInput.click());
+
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.classList.add('border-green-600');
+        });
+
+        dropzone.addEventListener('dragleave', () => {
+            dropzone.classList.remove('border-green-600');
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('border-green-600');
+            imageInput.files = e.dataTransfer.files;
+            showImagePreview(e.dataTransfer.files[0]);
+        });
+
+        document.addEventListener('paste', (e) => {
+            const items = e.clipboardData.items;
+            for (let i = 0; i < items.length; i++) {
+                if (items[i].type.indexOf('image') !== -1) {
+                    const file = items[i].getAsFile();
+                    imageInput.files = createFileList(file);
+                    showImagePreview(file);
+                }
+            }
+        });
+
+        uploadForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const formData = new FormData(uploadForm);
+            
+            const response = await fetch('/', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            resultDiv.textContent = result.result;
+        });
+
+        function showImagePreview(file) {
+            const reader = new FileReader();
+            reader.onload = function (e) {
+                previewContainer.innerHTML = `
+                    <div class="relative">
+                        <img src="${e.target.result}" alt="Preview">
+                        <button id="removeImage" class="absolute top-0 right-0 bg-red-600 text-white px-2 rounded-full">×</button>
+                    </div>
+                `;
+                document.getElementById('removeImage').addEventListener('click', () => {
+                    previewContainer.innerHTML = '';
+                    imageInput.value = ''; // Reset the input value
+                });
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function createFileList(file) {
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            return dataTransfer.files;
+        }
+    </script>
+</body>
+</html>
